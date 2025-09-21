@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FastRTC Voice Widget Test</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .demo-section {
+            margin: 40px 0;
+            padding: 20px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            background: #f9fafb;
+        }
+        .widget-container {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        code {
+            background: #e5e7eb;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+        pre {
+            background: #1f2937;
+            color: #f9fafb;
+            padding: 16px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 16px 0;
+        }
+    </style>
+    <script src="./dist/fastrtc-voice-widget.umd.js"></script>
+</head>
+<body>
+    <h1>FastRTC Voice Widget Test Page</h1>
+
+    <div class="demo-section">
+        <h2>Basic Widget</h2>
+        <p>This widget features a large, centered button with text below. Replace <code>https://your-api.com</code> with your actual WebRTC endpoint.</p>
+
+        <div class="widget-container">
+            <fast-rtc-voice-widget api-url="http://localhost:8000"></fast-rtc-voice-widget>
+        </div>
+
+        <h3>HTML Code:</h3>
+        <pre><code>&lt;fast-rtc-voice-widget api-url="https://your-api.com"&gt;&lt;/fast-rtc-voice-widget&gt;</code></pre>
+    </div>
+
+    <div class="demo-section">
+        <h2>Widget with Device Selection</h2>
+        <p>This widget includes device selection controls in the top-right corner.</p>
+
+        <div class="widget-container">
+            <fast-rtc-voice-widget api-url="http://localhost:8000" show-device-selection></fast-rtc-voice-widget>
+        </div>
+
+        <h3>HTML Code:</h3>
+        <pre><code>&lt;fast-rtc-voice-widget api-url="https://your-api.com" show-device-selection&gt;&lt;/fast-rtc-voice-widget&gt;</code></pre>
+    </div>
+
+    <div class="demo-section">
+        <h2>Widget with Authentication</h2>
+        <p>This widget includes an authentication token for secure API access.</p>
+
+        <div class="widget-container">
+            <fast-rtc-voice-widget api-url="http://localhost:8000" auth-token="demo-token" show-device-selection></fast-rtc-voice-widget>
+        </div>
+
+        <h3>HTML Code:</h3>
+        <pre><code>&lt;fast-rtc-voice-widget api-url="https://your-api.com" auth-token="your-token" show-device-selection&gt;&lt;/fast-rtc-voice-widget&gt;</code></pre>
+    </div>
+
+    <div class="demo-section">
+        <h2>Connected State Demo</h2>
+        <p>This shows what the widget looks like when connected (with expanded controls).</p>
+
+        <div class="widget-container">
+            <fast-rtc-voice-widget api-url="http://localhost:8000" show-device-selection is-connected></fast-rtc-voice-widget>
+        </div>
+
+        <h3>HTML Code:</h3>
+        <pre><code>&lt;fast-rtc-voice-widget api-url="https://your-api.com" show-device-selection is-connected&gt;&lt;/fast-rtc-voice-widget&gt;</code></pre>
+    </div>
+
+    <div class="demo-section">
+        <h2>Instructions</h2>
+        <ol>
+            <li><strong>IMPORTANT: Load the script in the &lt;head&gt; section</strong> (not at the bottom of the page):
+                <pre><code>&lt;head&gt;
+    &lt;script src="https://unpkg.com/fastrtc-voice-widget@1.0.0/dist/fastrtc-voice-widget.js"&gt;&lt;/script&gt;
+&lt;/head&gt;</code></pre>
+            </li>
+            <li><strong>Add the widget element</strong> where you want it to appear on your page</li>
+            <li><strong>Configure the api-url</strong> attribute with your WebRTC backend URL</li>
+            <li><strong>Optional:</strong> Add <code>show-device-selection</code> to enable device selection menu</li>
+            <li><strong>Optional:</strong> Add <code>auth-token</code> if your API requires authentication</li>
+            <li><strong>Demo:</strong> Add <code>is-connected</code> to show the connected state with expanded controls</li>
+        </ol>
+
+        <div style="background: #fef3c7; border: 1px solid #f59e0b; border-radius: 8px; padding: 16px; margin: 16px 0;">
+            <h4 style="color: #92400e; margin-top: 0;">⚠️ Important Note:</h4>
+            <p style="color: #92400e; margin-bottom: 0;">
+                The script <strong>must be loaded in the &lt;head&gt; section</strong> before the browser parses the custom elements.
+                If you see just text instead of the widget, the script is loading too late.
+            </p>
+        </div>
+    </div>
+
+    <div class="demo-section">
+        <h2>Widget Design</h2>
+        <p>The widget features a modern, centered design with:</p>
+        <ul>
+            <li><strong>Large 80px button</strong> with sophisticated shadows and hover effects</li>
+            <li><strong>Centered text</strong> below the button with clear status messages</li>
+            <li><strong>Smooth animations</strong> for state transitions</li>
+            <li><strong>Accessible design</strong> with proper ARIA labels and screen reader support</li>
+        </ul>
+    </div>
+
+    <div class="demo-section">
+        <h2>Widget States</h2>
+        <p>The widget has three main states:</p>
+        <ul>
+            <li><strong>Idle:</strong> Plain/neutral colored button with "Click to start voice chat"</li>
+            <li><strong>Connecting:</strong> Orange pulsing animation with "Connecting..."</li>
+            <li><strong>Connected:</strong> Red button with expanded controls (hang up + mute)</li>
+        </ul>
+        <p>When connected, the widget expands to show additional controls:
+        <ul>
+            <li><strong>Call button</strong> (plain/neutral) - starts connection</li>
+            <li><strong>Hang up button</strong> (red) - ends the connection</li>
+            <li><strong>Mute button</strong> (plain when not muted, yellow when muted) - toggles microphone</li>
+        </ul>
+        </p>
+    </div>
+
+    <div class="demo-section">
+        <h2>Device Selection</h2>
+        <p>If enabled with <code>show-device-selection</code>, users can:</p>
+        <ul>
+            <li>Click the settings icon (⚙️) positioned in the top-right corner of the widget</li>
+            <li>Choose from all available microphones and speakers</li>
+            <li>Changes apply in real-time during calls</li>
+        </ul>
+        <p><strong>Features:</strong></p>
+        <ul>
+            <li><strong>Permission on-demand:</strong> Device access is requested only when settings is clicked</li>
+            <li><strong>Hidden audio with autoplay:</strong> Remote audio plays automatically through hidden element</li>
+            <li><strong>Robust device enumeration:</strong> Handles permission denials and missing devices gracefully</li>
+            <li>Lists all available input (microphone) devices with clear names</li>
+            <li>Lists all available output (speaker) devices with clear names</li>
+            <li>Real-time device switching during active calls</li>
+            <li><strong>Vertically centered settings button:</strong> Perfectly positioned in the middle of the widget</li>
+        </ul>
+        <p><strong>Note:</strong> The first time you click the settings button, it will request microphone permissions. If permissions are denied, it will show default/placeholder devices.</p>
+    </div>
+
+</body>
+</html>

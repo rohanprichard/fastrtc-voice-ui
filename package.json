@@ -1,0 +1,42 @@
+{
+  "name": "fastrtc-voice-widget",
+  "version": "1.0.0",
+  "description": "A language-agnostic voice AI widget that can be embedded via CDN",
+  "main": "dist/fastrtc-voice-widget.js",
+  "types": "dist/fastrtc-voice-widget.d.ts",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "bin": {
+    "fastrtc-voice-widget": "./cli.js"
+  },
+  "scripts": {
+    "build": "vite build",
+    "dev": "vite build --watch",
+    "cli": "node cli.js",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "webrtc",
+    "voice-widget",
+    "embed",
+    "cdn",
+    "web-component"
+  ],
+  "author": "Rohan Richard",
+  "license": "MIT",
+  "devDependencies": {
+    "terser": "^5.44.0",
+    "typescript": "^5.0.0",
+    "vite": "^5.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/fastrtc-voice-widget"
+  },
+  "bugs": {
+    "url": "https://github.com/yourusername/fastrtc-voice-widget/issues"
+  },
+  "homepage": "https://github.com/yourusername/fastrtc-voice-widget#readme"
+}
