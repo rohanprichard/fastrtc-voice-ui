@@ -1,5 +1,5 @@
 {
-  "name": "fastrtc-voice-widget",
+  "name": "@rohanprichard/fastrtc-voice-widget",
   "version": "1.0.0",
   "description": "A language-agnostic voice AI widget that can be embedded via CDN",
   "main": "dist/fastrtc-voice-widget.umd.js",
@@ -25,6 +25,9 @@
   ],
   "author": "Rohan Richard",
   "license": "MIT",
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
   "devDependencies": {
     "terser": "^5.44.0",
     "typescript": "^5.0.0",
