@@ -9,6 +9,9 @@ class FastRTCVoiceWidget extends HTMLElement {
     this.currentStream = null;
     this.dataChannel = null;
     this.audioOutputElement = null;
+    this.shadowClickListenerAdded = false;
+    this.playbackStarted = false;
+    this.debugEnabled = false;
 
     // Device state
     this.inputDevices = [];
@@ -21,11 +24,28 @@ class FastRTCVoiceWidget extends HTMLElement {
     this.isMicMuted = false;
   }
 
+  static get observedAttributes() {
+    return ['debug'];
+  }
+
+  attributeChangedCallback(name, oldValue, newValue) {
+    if (name === 'debug') {
+      this.debugEnabled = this.hasAttribute('debug');
+    }
+  }
+
+  debugLog(...args) {
+    if (this.debugEnabled) {
+      console.log(...args);
+    }
+  }
+
   connectedCallback() {
     try {
       this.apiUrl = this.getAttribute('api-url') || '';
       this.authToken = this.getAttribute('auth-token') || '';
       this.showDeviceSelection = this.hasAttribute('show-device-selection');
+      this.debugEnabled = this.hasAttribute('debug');
 
     // Check for demo attributes
     if (this.hasAttribute('is-connected')) {
@@ -75,7 +95,6 @@ class FastRTCVoiceWidget extends HTMLElement {
     }
 
     try {
-      console.log('Requesting device access and enumerating media devices...');
 
       // Request microphone access first to get permissions
       try {
@@ -90,13 +109,11 @@ class FastRTCVoiceWidget extends HTMLElement {
         stream.getTracks().forEach(track => track.stop());
         console.log('Microphone access granted for device enumeration');
       } catch (micError) {
-        console.warn('Could not get microphone access for device enumeration:', micError);
         // Continue anyway - some devices might still be enumerable
       }
 
       // Now enumerate devices
       const devices = await navigator.mediaDevices.enumerateDevices();
-      console.log('Available devices:', devices);
 
       this.inputDevices = devices
         .filter(device => device.kind === 'audioinput')
@@ -116,8 +133,7 @@ class FastRTCVoiceWidget extends HTMLElement {
             : (device.deviceId === 'default' ? 'Default Speaker' : 'Unknown Speaker')
         }));
 
-      console.log('Input devices found:', this.inputDevices.length);
-      console.log('Output devices found:', this.outputDevices.length);
+      
 
       if (!this.selectedInputDeviceId && this.inputDevices.length > 0) {
         this.selectedInputDeviceId = this.inputDevices[0].deviceId || 'default';
@@ -142,7 +158,7 @@ class FastRTCVoiceWidget extends HTMLElement {
           deviceId: 'default',
           label: 'Default Speaker'
         }];
-        console.log('Using default devices due to permission denial');
+        
       } else {
         // For other errors, show placeholder devices
         this.inputDevices = [{
@@ -153,7 +169,7 @@ class FastRTCVoiceWidget extends HTMLElement {
           deviceId: '',
           label: 'No speaker detected'
         }];
-        console.log('Using placeholder devices due to error');
+        
       }
 
       this.rebuildDeviceMenu();
@@ -168,7 +184,6 @@ class FastRTCVoiceWidget extends HTMLElement {
     }
 
     try {
-      console.log("Requesting microphone permissions...");
       const constraints = {
         audio: this.selectedInputDeviceId ? {
           deviceId: { exact: this.selectedInputDeviceId },
@@ -183,53 +198,68 @@ class FastRTCVoiceWidget extends HTMLElement {
       };
 
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
-      console.log("Microphone access granted.");
+      
 
       this.currentStream = stream;
       this.peerConnection = new RTCPeerConnection(await this.getTurnCredentials());
 
       // Add tracks to peer connection
       stream.getTracks().forEach(track => {
-        console.log(`Adding track: ${track.kind}`);
         this.peerConnection.addTrack(track, stream);
       });
 
       // Handle remote tracks
       this.peerConnection.addEventListener("track", (evt) => {
-        console.log(`Track received: ${evt.track.kind}`);
-        if (this.audioOutputElement.srcObject !== evt.streams[0]) {
-          console.log("Attaching remote stream to audio element");
-          this.audioOutputElement.srcObject = evt.streams[0];
 
-          // Try to play and unmute the audio
-          this.audioOutputElement.play().then(() => {
-            // Unmute once we start receiving audio
-            if (this.audioOutputElement.muted) {
+        if (evt.track.kind === 'audio') {
+          if (this.audioOutputElement) {
+            if (this.audioOutputElement.srcObject !== evt.streams[0]) {
+              this.audioOutputElement.srcObject = evt.streams[0];
+
+              // Set volume and unmute
+              this.audioOutputElement.volume = 1.0;
               this.audioOutputElement.muted = false;
-              console.log("Audio unmuted for remote stream");
+              // Defer to unified playback handler to avoid multiple play() calls
+              this.ensurePlayback();
+            } else {
+              
             }
-          }).catch(error => {
-            console.warn("Audio autoplay failed:", error);
-            // Still unmute in case it helps
-            this.audioOutputElement.muted = false;
-          });
+          } else {
+            console.error("❌ Audio element not found!");
+          }
+        } else {
+          
         }
       });
 
       // Create data channel
       this.dataChannel = this.peerConnection.createDataChannel("text");
-      this.dataChannel.onopen = () => console.log("Data channel: open");
-      this.dataChannel.onclose = () => console.log("Data channel: closed");
+      this.dataChannel.onopen = () => {
+        // If data channel opens and we're not marked as connected, force connection state
+        if (!this.isWebRTCConnected) {
+          this.isWebRTCConnected = true;
+          this.updateUI();
+
+          // Force unmute audio element when data channel opens
+          this.forceUnmuteAudio();
+        }
+      };
+      this.dataChannel.onclose = () => {};
       this.dataChannel.onerror = (error) => console.error("Data channel error:", error);
       this.dataChannel.onmessage = (event) => {
-        console.log("Data channel message received:", event.data);
+        // If we receive data channel messages and we're not marked as connected, force connection state
+        if (!this.isWebRTCConnected) {
+          this.isWebRTCConnected = true;
+          this.updateUI();
+
+          // Force unmute audio element when data channel messages arrive
+          this.forceUnmuteAudio();
+        }
       };
 
       // Create offer
-      console.log("Creating offer...");
       const offer = await this.peerConnection.createOffer();
       await this.peerConnection.setLocalDescription(offer);
-      console.log("Local description (offer) set.");
 
       const randomId = Math.random().toString(36).substring(7);
       const webrtcId = randomId;
@@ -237,7 +267,6 @@ class FastRTCVoiceWidget extends HTMLElement {
       // Handle ICE candidates
       this.peerConnection.onicecandidate = ({ candidate }) => {
         if (candidate) {
-          console.debug("Sending ICE candidate", candidate);
           fetch(`${this.apiUrl}/webrtc/offer`, {
             method: 'POST',
             headers: {
@@ -253,24 +282,47 @@ class FastRTCVoiceWidget extends HTMLElement {
       };
 
       this.peerConnection.oniceconnectionstatechange = () => {
-        console.log(`ICE connection state change: ${this.peerConnection.iceConnectionState}`);
+
+        // If ICE is connected and we have data channel messages, consider it connected
+        if (this.peerConnection.iceConnectionState === 'connected' ||
+            this.peerConnection.iceConnectionState === 'completed') {
+          if (!this.isWebRTCConnected) {
+            this.isWebRTCConnected = true;
+            this.updateUI();
+
+            // Force unmute audio element when ICE connected
+            this.forceUnmuteAudio();
+          }
+        } else if (this.peerConnection.iceConnectionState === 'failed' ||
+                   this.peerConnection.iceConnectionState === 'disconnected') {
+          this.isWebRTCConnected = false;
+          this.updateUI();
+        }
       };
 
       this.peerConnection.onconnectionstatechange = () => {
-        console.log(`Connection state change: ${this.peerConnection.connectionState}`);
-          if (this.peerConnection.connectionState === 'connected') {
-            this.isWebRTCConnected = true;
-            this.updateUI();
-          } else if (this.peerConnection.connectionState === 'failed' ||
-                   this.peerConnection.connectionState === 'disconnected' ||
+
+        if (this.peerConnection.connectionState === 'connected') {
+          this.isWebRTCConnected = true;
+          this.updateUI();
+
+          // Force unmute audio element when connected
+          this.forceUnmuteAudio();
+        } else if (this.peerConnection.connectionState === 'connecting') {
+          
+        } else if (this.peerConnection.connectionState === 'new') {
+          
+        } else if (this.peerConnection.connectionState === 'failed') {
+          this.isWebRTCConnected = false;
+          this.updateUI();
+        } else if (this.peerConnection.connectionState === 'disconnected' ||
                    this.peerConnection.connectionState === 'closed') {
-            this.isWebRTCConnected = false;
-            this.updateUI();
-          }
+          this.isWebRTCConnected = false;
+          this.updateUI();
+        }
       };
 
       // Send offer to server
-      console.log("Sending offer to server...");
       const response = await fetch(`${this.apiUrl}/webrtc/offer`, {
         method: 'POST',
         headers: {
@@ -283,27 +335,33 @@ class FastRTCVoiceWidget extends HTMLElement {
         })
       });
 
-      console.log("Offer sent, server responded.");
-      const serverResponse = await response.json();
-      console.log("Received answer data:", serverResponse);
+      let serverResponse;
+      try {
+        serverResponse = await response.json();
 
-      // Check if serverResponse is valid
-      if (!serverResponse || typeof serverResponse !== 'object') {
-        throw new Error('Invalid server response: not an object');
+        // Validate server response
+        if (!serverResponse || typeof serverResponse !== 'object') {
+          throw new Error('Invalid server response: not an object');
+        }
+
+        if (!serverResponse.sdp || !serverResponse.type) {
+          throw new Error('Invalid server response: missing sdp or type');
+        }
+
+        // Create proper RTCSessionDescription object
+        const answer = new RTCSessionDescription({
+          type: serverResponse.type,
+          sdp: serverResponse.sdp
+        });
+
+        await this.peerConnection.setRemoteDescription(answer);
+
+      } catch (parseError) {
+        // Handle JSON parsing errors or validation errors
+        console.error("Error parsing server response:", parseError);
+        console.error("Server response was:", serverResponse);
+        throw new Error(`Failed to parse server response: ${parseError.message}`);
       }
-
-      if (!serverResponse.sdp || !serverResponse.type) {
-        throw new Error('Invalid server response: missing sdp or type');
-      }
-
-      // Create proper RTCSessionDescription object
-      const answer = new RTCSessionDescription({
-        type: serverResponse.type,
-        sdp: serverResponse.sdp
-      });
-
-      await this.peerConnection.setRemoteDescription(answer);
-      console.log("Remote description (answer) set.");
 
     } catch (error) {
       console.error("Error in WebRTC setup process:", error);
@@ -321,6 +379,10 @@ class FastRTCVoiceWidget extends HTMLElement {
       } else {
         alert("WebRTC connection failed: " + error.message);
       }
+
+      // Clean up on error
+      this.isWebRTCConnected = false;
+      this.updateUI();
     }
   }
 
@@ -361,15 +423,7 @@ class FastRTCVoiceWidget extends HTMLElement {
         return;
       }
 
-      if (!this.peerConnection || this.peerConnection.signalingState === 'closed') {
-        console.log("Initializing or re-initializing RTCPeerConnection for a new session.");
-        this.peerConnection = new RTCPeerConnection(await this.getTurnCredentials());
-      }
-
-      if (!this.peerConnection) {
-        console.error("RTCPeerConnection is null even after initialization attempt.");
-        return;
-      }
+      // RTCPeerConnection will be created inside setupWebRTC()
 
       this.isConnecting = true;
       this.updateUI();
@@ -579,11 +633,13 @@ class FastRTCVoiceWidget extends HTMLElement {
       .mic-button.active {
         background: #ef4444;
         border-color: #dc2626;
+        color: #ffffff;
       }
 
       .mic-button.connecting {
         background: #f59e0b;
         border-color: #d97706;
+        color: #ffffff;
       }
 
       /* Call button (idle state) - plain/neutral */
@@ -606,6 +662,7 @@ class FastRTCVoiceWidget extends HTMLElement {
       .mic-button.muted {
         background: #fbbf24;
         border-color: #f59e0b;
+        color: #111827;
       }
 
       .text-container {
@@ -764,8 +821,9 @@ class FastRTCVoiceWidget extends HTMLElement {
     const micButton = document.createElement('button');
     micButton.className = `mic-button ${this.isWebRTCConnected ? 'active' : ''} ${this.isConnecting ? 'connecting' : ''}`;
     micButton.setAttribute('aria-label', this.isWebRTCConnected ? 'Stop voice chat' : 'Start voice chat');
+    micButton.setAttribute('data-role', 'call');
 
-    if (this.isConnecting) {
+    if (this.isConnecting && !this.isWebRTCConnected) {
       micButton.classList.add('connecting-animation');
     }
 
@@ -786,7 +844,7 @@ class FastRTCVoiceWidget extends HTMLElement {
 
     const primaryText = document.createElement('p');
     primaryText.className = 'primary-text';
-    primaryText.textContent = this.isConnecting ? 'Connecting...' : this.isWebRTCConnected ? 'Connected' : 'Click to start!';
+    primaryText.textContent = (this.isConnecting && !this.isWebRTCConnected) ? 'Connecting...' : this.isWebRTCConnected ? 'Connected' : 'Click to start!';
 
     const secondaryText = document.createElement('p');
     secondaryText.className = 'secondary-text';
@@ -845,12 +903,14 @@ class FastRTCVoiceWidget extends HTMLElement {
       const hangUpButton = document.createElement('button');
       hangUpButton.className = 'mic-button active';
       hangUpButton.setAttribute('aria-label', 'Hang up');
+      hangUpButton.setAttribute('data-role', 'hangup');
       hangUpButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-phone-off-icon lucide-phone-off"><path d="M10.1 13.9a14 14 0 0 0 3.732 2.668 1 1 0 0 0 1.213-.303l.355-.465A2 2 0 0 1 17 15h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2 18 18 0 0 1-12.728-5.272"/><path d="M22 2 2 22"/><path d="M4.76 13.582A18 18 0 0 1 2 4a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v3a2 2 0 0 1-.8 1.6l-.468.351a1 1 0 0 0-.292 1.233 14 14 0 0 0 .244.473"/></svg>'
 
       // Mute button
       const muteButton = document.createElement('button');
       muteButton.className = `mic-button ${this.isMicMuted ? 'muted' : ''}`;
       muteButton.setAttribute('aria-label', this.isMicMuted ? 'Unmute microphone' : 'Mute microphone');
+      muteButton.setAttribute('data-role', 'mute');
       muteButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-mic-off-icon lucide-mic-off"><path d="M12 19v3"/><path d="M15 9.34V5a3 3 0 0 0-5.68-1.33"/><path d="M16.95 16.95A7 7 0 0 1 5 12v-2"/><path d="M18.89 13.23A7 7 0 0 0 19 12v-2"/><path d="m2 2 20 20"/><path d="M9 9v3a3 3 0 0 0 5.12 2.12"/></svg>'
       buttonsContainer.appendChild(hangUpButton);
       buttonsContainer.appendChild(muteButton);
@@ -867,15 +927,48 @@ class FastRTCVoiceWidget extends HTMLElement {
       container.appendChild(menuContainer);
     }
 
-    // Hidden audio element with autoplay for remote stream
-    this.audioOutputElement = document.createElement('audio');
-    this.audioOutputElement.className = 'audio-element';
-    this.audioOutputElement.id = 'fastrtc-voice-widget-audio';
-    this.audioOutputElement.autoplay = true;
-    this.audioOutputElement.playsInline = true;
-    this.audioOutputElement.controls = false;
-    this.audioOutputElement.muted = false; // Start muted to avoid autoplay issues
+    // Hidden audio element with autoplay for remote stream (preserve across re-renders)
+    const existingAudioElement = this.audioOutputElement;
+    const existingStream = existingAudioElement?.srcObject || null;
+
+    if (existingAudioElement) {
+      this.audioOutputElement = existingAudioElement;
+    } else {
+      this.audioOutputElement = document.createElement('audio');
+      this.audioOutputElement.className = 'audio-element';
+      this.audioOutputElement.id = 'fastrtc-voice-widget-audio';
+      this.audioOutputElement.autoplay = true;
+      this.audioOutputElement.playsInline = true;
+      this.audioOutputElement.controls = false;
+      this.audioOutputElement.muted = false;
+      this.audioOutputElement.volume = 1.0;
+
+    // Add debugging events to audio element (only once per element)
+      this.audioOutputElement.addEventListener('error', (e) => {
+        console.error('Audio element error:', e);
+      });
+    }
+
+    // Add click handler to the widget container to enable audio playback (once)
+    if (!this.shadowClickListenerAdded) {
+      this.shadowRoot.addEventListener('click', () => {
+        if (this.audioOutputElement) {
+          if (this.audioOutputElement.muted) {
+            console.log('🔊 User clicked widget - attempting to unmute audio');
+            this.forceUnmuteAudio();
+          }
+          this.ensurePlayback();
+        }
+      });
+      this.shadowClickListenerAdded = true;
+    }
+
     container.appendChild(this.audioOutputElement);
+
+    // If there was an existing stream attached before re-render, ensure it remains attached
+    if (existingStream && !this.audioOutputElement.srcObject) {
+      this.audioOutputElement.srcObject = existingStream;
+    }
 
     this.shadowRoot.innerHTML = '';
     this.shadowRoot.appendChild(style);
@@ -993,20 +1086,20 @@ class FastRTCVoiceWidget extends HTMLElement {
 
   setupEventListeners() {
     // Main mic button (for start/stop)
-    const micButton = this.shadowRoot.querySelector('.mic-button:not(.active)');
+    const micButton = this.shadowRoot.querySelector('.mic-button[data-role="call"]');
     if (micButton) {
       micButton.addEventListener('click', () => this.handleToggleVoiceChat());
     }
 
     // Hang up button (red)
-    const hangUpButton = this.shadowRoot.querySelector('.mic-button.active');
+    const hangUpButton = this.shadowRoot.querySelector('.mic-button[data-role="hangup"]');
     if (hangUpButton && !hangUpButton.hasEventListener) {
       hangUpButton.addEventListener('click', () => this.handleToggleVoiceChat());
       hangUpButton.hasEventListener = true;
     }
 
     // Mute button (toggle)
-    const muteButton = this.shadowRoot.querySelector('.widget-buttons .mic-button:not(.active)');
+    const muteButton = this.shadowRoot.querySelector('.mic-button[data-role="mute"]');
     if (muteButton && !muteButton.hasEventListener) {
       muteButton.addEventListener('click', () => {
         this.handleMuteToggle();
@@ -1019,39 +1112,108 @@ class FastRTCVoiceWidget extends HTMLElement {
     this.shutdownWebRTC();
 
     if (this.audioOutputElement) {
+      console.log('Cleaning up audio element');
       this.audioOutputElement.srcObject = null;
+      this.audioOutputElement.pause();
     }
+    this.playbackStarted = false;
+  }
+
+  // Force unmute audio element with multiple techniques
+  forceUnmuteAudio() {
+    if (!this.audioOutputElement) {
+      console.error('Audio element not found');
+      return;
+    }
+
+    // Method 1: Direct property setting
+    this.audioOutputElement.muted = false;
+    this.audioOutputElement.volume = 1.0;
+
+    // Method 2: Try to set sink ID (for output device control)
+    if (this.audioOutputElement.setSinkId && this.selectedOutputDeviceId) {
+      this.audioOutputElement.setSinkId(this.selectedOutputDeviceId).catch(() => {});
+    }
+
+    // Method 3: Delegate actual playback to a single unified handler
+    
+
+    this.ensurePlayback();
+    
+  }
+
+  // Ensure playback starts only once to avoid overlapping play() calls
+  ensurePlayback() {
+    if (!this.audioOutputElement || this.playbackStarted === true) return;
+    if (!this.audioOutputElement.srcObject) return;
+
+    if (this.audioOutputElement.paused) {
+      const playPromise = this.audioOutputElement.play();
+      if (playPromise !== undefined) {
+        playPromise.then(() => {
+          this.playbackStarted = true;
+        }).catch(error => {
+          
+        });
+      }
+    } else {
+      this.playbackStarted = true;
+    }
+  }
+
+  // Debug method to check audio status
+  debugAudioStatus() {
+    console.group('🔊 Audio Status Debug');
+    console.log('Audio element exists:', !!this.audioOutputElement);
+    console.log('Audio element muted:', this.audioOutputElement?.muted);
+    console.log('Audio element volume:', this.audioOutputElement?.volume);
+    console.log('Audio element srcObject:', this.audioOutputElement?.srcObject);
+    console.log('Audio element paused:', this.audioOutputElement?.paused);
+    console.log('Audio element readyState:', this.audioOutputElement?.readyState);
+    console.log('WebRTC connected:', this.isWebRTCConnected);
+    console.log('Peer connection state:', this.peerConnection?.connectionState);
+    console.log('Current stream tracks:', this.currentStream?.getTracks().length || 0);
+    console.log('Peer connection senders:', this.peerConnection?.getSenders().length || 0);
+
+    if (this.peerConnection) {
+      const receivers = this.peerConnection.getReceivers();
+      console.log('Peer connection receivers:', receivers.length);
+      receivers.forEach((receiver, index) => {
+        console.log(`Receiver ${index}:`, {
+          track: receiver.track ? {
+            kind: receiver.track.kind,
+            id: receiver.track.id,
+            enabled: receiver.track.enabled,
+            readyState: receiver.track.readyState
+          } : null
+        });
+      });
+    }
+
+    if (this.audioOutputElement?.srcObject) {
+      const stream = this.audioOutputElement.srcObject;
+      console.log('Audio stream details:', {
+        id: stream.id,
+        active: stream.active,
+        tracks: stream.getTracks().map(t => ({
+          kind: t.kind,
+          id: t.id,
+          enabled: t.enabled,
+          readyState: t.readyState
+        }))
+      });
+    }
+
+    console.groupEnd();
   }
 }
 
 // Register the web component
-if (!customElements.get('fast-rtc-voice-widget')) {
-  customElements.define('fast-rtc-voice-widget', FastRTCVoiceWidget);
+if (!customElements.get('fastrtc-voice-widget')) {
+  customElements.define('fastrtc-voice-widget', FastRTCVoiceWidget);
 }
 
-// Handle case where elements are already in DOM before script loads
-if (document.readyState === 'loading') {
-  // Document is still loading, wait for DOMContentLoaded
-  document.addEventListener('DOMContentLoaded', () => {
-    initializeExistingWidgets();
-  });
-} else {
-  // Document already loaded, initialize immediately
-  initializeExistingWidgets();
-}
-
-function initializeExistingWidgets() {
-  // Find all existing fast-rtc-voice-widget elements and upgrade them
-  const widgets = document.querySelectorAll('fast-rtc-voice-widget');
-  widgets.forEach(widget => {
-    if (!widget.shadowRoot) {
-      // Element hasn't been upgraded yet, manually trigger connectedCallback
-      const instance = new FastRTCVoiceWidget();
-      Object.setPrototypeOf(widget, instance);
-      instance.connectedCallback();
-    }
-  });
-}
+// Rely on the browser's native custom element upgrade lifecycle
 
 // Export for use in other contexts
 window.FastRTCVoiceWidget = FastRTCVoiceWidget;

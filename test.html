@@ -50,11 +50,11 @@
         <p>This widget features a large, centered button with text below. Replace <code>https://your-api.com</code> with your actual WebRTC endpoint.</p>
 
         <div class="widget-container">
-            <fast-rtc-voice-widget api-url="http://localhost:8000"></fast-rtc-voice-widget>
+            <fastrtc-voice-widget api-url="http://localhost:8000"></fastrtc-voice-widget>
         </div>
 
         <h3>HTML Code:</h3>
-        <pre><code>&lt;fast-rtc-voice-widget api-url="https://your-api.com"&gt;&lt;/fast-rtc-voice-widget&gt;</code></pre>
+        <pre><code>&lt;fastrtc-voice-widget api-url="https://your-api.com"&gt;&lt;/fastrtc-voice-widget&gt;</code></pre>
     </div>
 
     <div class="demo-section">
@@ -62,11 +62,11 @@
         <p>This widget includes device selection controls in the top-right corner.</p>
 
         <div class="widget-container">
-            <fast-rtc-voice-widget api-url="http://localhost:8000" show-device-selection></fast-rtc-voice-widget>
+            <fastrtc-voice-widget api-url="http://localhost:8000" show-device-selection></fastrtc-voice-widget>
         </div>
 
         <h3>HTML Code:</h3>
-        <pre><code>&lt;fast-rtc-voice-widget api-url="https://your-api.com" show-device-selection&gt;&lt;/fast-rtc-voice-widget&gt;</code></pre>
+        <pre><code>&lt;fastrtc-voice-widget api-url="https://your-api.com" show-device-selection&gt;&lt;/fastrtc-voice-widget&gt;</code></pre>
     </div>
 
     <div class="demo-section">
@@ -74,11 +74,11 @@
         <p>This widget includes an authentication token for secure API access.</p>
 
         <div class="widget-container">
-            <fast-rtc-voice-widget api-url="http://localhost:8000" auth-token="demo-token" show-device-selection></fast-rtc-voice-widget>
+            <fastrtc-voice-widget api-url="http://localhost:8000" auth-token="demo-token" show-device-selection></fastrtc-voice-widget>
         </div>
 
         <h3>HTML Code:</h3>
-        <pre><code>&lt;fast-rtc-voice-widget api-url="https://your-api.com" auth-token="your-token" show-device-selection&gt;&lt;/fast-rtc-voice-widget&gt;</code></pre>
+        <pre><code>&lt;fastrtc-voice-widget api-url="https://your-api.com" auth-token="your-token" show-device-selection&gt;&lt;/fastrtc-voice-widget&gt;</code></pre>
     </div>
 
     <div class="demo-section">
@@ -86,11 +86,11 @@
         <p>This shows what the widget looks like when connected (with expanded controls).</p>
 
         <div class="widget-container">
-            <fast-rtc-voice-widget api-url="http://localhost:8000" show-device-selection is-connected></fast-rtc-voice-widget>
+            <fastrtc-voice-widget api-url="http://localhost:8000" show-device-selection is-connected></fastrtc-voice-widget>
         </div>
 
         <h3>HTML Code:</h3>
-        <pre><code>&lt;fast-rtc-voice-widget api-url="https://your-api.com" show-device-selection is-connected&gt;&lt;/fast-rtc-voice-widget&gt;</code></pre>
+        <pre><code>&lt;fastrtc-voice-widget api-url="https://your-api.com" show-device-selection is-connected&gt;&lt;/fastrtc-voice-widget&gt;</code></pre>
     </div>
 
     <div class="demo-section">
@@ -115,6 +115,140 @@
                 If you see just text instead of the widget, the script is loading too late.
             </p>
         </div>
+    </div>
+
+    <div class="demo-section">
+        <h2>🔊 Audio Debug</h2>
+        <p>If you're not hearing audio output, use these debugging tools:</p>
+        <div style="margin: 10px 0;">
+            <button onclick="debugAudio()" style="margin: 5px; padding: 10px 20px;">Debug Audio Status</button>
+            <button onclick="testAudioPlayback()" style="margin: 5px; padding: 10px 20px; background: #fbbf24;">Test Audio Playback</button>
+        </div>
+        <div id="audio-debug" style="background: #f3f4f6; padding: 10px; margin: 10px 0; border-radius: 4px; font-family: monospace; font-size: 12px;"></div>
+
+        <script>
+            function testAudioPlayback() {
+                const testAudio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IAAAAAEAAQARAAAAEAAAAAEACABkYXRhAgAAAAEA');
+                testAudio.volume = 0.5;
+                testAudio.play().then(() => {
+                    alert('✅ Audio playback test successful! Your browser can play audio.');
+                }).catch(error => {
+                    alert('❌ Audio playback test failed: ' + error.message);
+                });
+            }
+        </script>
+
+        <p><strong>Common Audio Issues:</strong></p>
+        <ul>
+            <li><strong>Check console:</strong> Open browser dev tools (F12) and check for audio-related messages</li>
+            <li><strong>Check connection:</strong> Make sure WebRTC is connected before expecting audio</li>
+            <li><strong>Check permissions:</strong> Microphone permissions must be granted for device enumeration</li>
+            <li><strong>Check browser:</strong> Some browsers require user interaction before playing audio</li>
+            <li><strong>Server endpoint:</strong> Make sure your server has a `/webrtc/offer` endpoint that accepts the offer and ICE candidates</li>
+            <li><strong>CORS:</strong> Check if there are any CORS issues preventing the requests</li>
+        </ul>
+
+        <p><strong>Expected Console Messages:</strong></p>
+        <ul>
+            <li>✅ "Attaching remote stream to audio element"</li>
+            <li>✅ "Remote audio started playing"</li>
+            <li>✅ "Audio element unmuted"</li>
+            <li>✅ "Remote description (answer) set."</li>
+            <li>🔊 "Remote track received: audio"</li>
+            <li>🎵 "Audio track detected"</li>
+            <li>🔗 "Attaching remote audio stream to audio element"</li>
+            <li>🔊 "Audio stream attached, element configured"</li>
+            <li>🔄 "Attempting to play audio after stream attachment..."</li>
+            <li>✅ "Initial audio play successful"</li>
+            <li>✅ "Data channel opened - treating as WebRTC connected"</li>
+            <li>✅ "ICE connected - treating as WebRTC connected"</li>
+            <li>🔊 "Force unmute attempt completed"</li>
+        </ul>
+
+        <p><strong>Server Response Format Expected:</strong></p>
+        <ul>
+            <li>Your server should return: <code>{ "sdp": "...", "type": "answer" }</code></li>
+            <li>Server response is wrapped in RTCSessionDescription object</li>
+            <li>Proper validation of server response format</li>
+        </ul>
+
+        <p><strong>Audio Debugging Steps:</strong></p>
+        <ol>
+            <li><strong>Connect the widget</strong> and watch for connection messages</li>
+            <li><strong>Check for remote tracks</strong> - Look for "🔊 Remote track received: audio"</li>
+            <li><strong>Verify stream attachment</strong> - Look for "🔗 Attaching remote audio stream"</li>
+            <li><strong>Check audio playback</strong> - Look for "✅ ✅ Remote audio started playing"</li>
+            <li><strong>If no audio, run debug</strong> - Click "Debug Audio Status" and check the console output</li>
+        </ol>
+
+        <p><strong>Implementation Notes:</strong></p>
+        <ul>
+            <li>Proper TURN credentials from GET /webrtc/turn-credentials</li>
+            <li>Server response validation and error handling</li>
+            <li>RTCSessionDescription object creation from server response</li>
+            <li>Better error messages with server response debugging</li>
+            <li><strong>Enhanced Connection Detection:</strong> Now detects connection via ICE state, data channel messages, or connection state</li>
+            <li><strong>Force Audio Unmuting:</strong> Multiple techniques to bypass browser autoplay restrictions</li>
+            <li><strong>User Interaction Workaround:</strong> Click anywhere on the widget to enable audio if autoplay fails</li>
+        </ul>
+
+        <p><strong>Connection Detection Logic:</strong></p>
+        <ul>
+            <li><strong>Data Channel Messages:</strong> When you see data channel messages like "started_talking", the widget will automatically mark as connected and unmute audio</li>
+            <li><strong>ICE Connection:</strong> When ICE connection state becomes "connected" or "completed", the widget will mark as connected and unmute audio</li>
+            <li><strong>Connection State:</strong> Standard WebRTC connection state detection as fallback</li>
+        </ul>
+
+        <p><strong>Force Audio Unmuting:</strong></p>
+        <ul>
+            <li><strong>Multiple Techniques:</strong> Direct property setting, output device control, and retry playback</li>
+            <li><strong>Triggered Automatically:</strong> When connection is detected via any method above</li>
+            <li><strong>User Interaction Fallback:</strong> Click anywhere on the widget if audio still doesn't work</li>
+            <li><strong>Console Logging:</strong> Look for "🔊 Force unmute attempt completed" and "✅ Final audio element state"</li>
+            <li><strong>Play Interruption Fix:</strong> Avoids the "play() request was interrupted" error by carefully managing play calls</li>
+        </ul>
+
+        <p><strong>Play Request Interruption Fix:</strong></p>
+        <ul>
+            <li><strong>Problem:</strong> Multiple play() calls can interrupt each other, causing "AbortError"</li>
+            <li><strong>Solution:</strong> Only call play() when audio is paused and has a stream attached</li>
+            <li><strong>Result:</strong> Eliminates the "media was removed from document" error</li>
+        </ul>
+
+        <script>
+            function debugAudio() {
+                const widgets = document.querySelectorAll('fastrtc-voice-widget');
+                const debugDiv = document.getElementById('audio-debug');
+
+                if (widgets.length === 0) {
+                    debugDiv.innerHTML = '❌ No widgets found on page';
+                    return;
+                }
+
+                debugDiv.innerHTML = '🔍 Checking audio status...\n\n';
+
+                widgets.forEach((widget, index) => {
+                    debugDiv.innerHTML += `Widget ${index + 1}:\n`;
+                    debugDiv.innerHTML += `  - Connected: ${widget.isWebRTCConnected || 'Not connected'}\n`;
+                    debugDiv.innerHTML += `  - Audio element: ${widget.audioOutputElement ? '✅ Found' : '❌ Missing'}\n`;
+
+                    if (widget.audioOutputElement) {
+                        debugDiv.innerHTML += `  - Audio muted: ${widget.audioOutputElement.muted}\n`;
+                        debugDiv.innerHTML += `  - Audio volume: ${widget.audioOutputElement.volume}\n`;
+                        debugDiv.innerHTML += `  - Audio srcObject: ${widget.audioOutputElement.srcObject ? '✅ Has stream' : '❌ No stream'}\n`;
+                        debugDiv.innerHTML += `  - Audio readyState: ${widget.audioOutputElement.readyState}\n`;
+                    }
+
+                    debugDiv.innerHTML += '\n';
+                });
+
+                // Also call the debug method if available
+                if (widgets[0] && widgets[0].debugAudioStatus) {
+                    console.log('Calling debugAudioStatus method...');
+                    widgets[0].debugAudioStatus();
+                }
+            }
+        </script>
     </div>
 
     <div class="demo-section">
