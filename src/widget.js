@@ -23,10 +23,11 @@ class FastRTCVoiceWidget extends HTMLElement {
     this.isExpanded = false;
     this.isMicMuted = false;
     this.menuPosition = 'bottom-right';
+    this.isDarkMode = false;
   }
 
   static get observedAttributes() {
-    return ['debug', 'menu-position'];
+    return ['debug', 'menu-position', 'dark-mode'];
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
@@ -39,6 +40,9 @@ class FastRTCVoiceWidget extends HTMLElement {
       } else {
         this.menuPosition = 'bottom-right';
       }
+      this.render();
+    } else if (name === 'dark-mode') {
+      this.isDarkMode = this.hasAttribute('dark-mode');
       this.render();
     }
   }
@@ -63,6 +67,9 @@ class FastRTCVoiceWidget extends HTMLElement {
       } else {
         this.menuPosition = 'bottom-right'; // default
       }
+
+      // Get dark mode attribute
+      this.isDarkMode = this.hasAttribute('dark-mode');
 
     // Check for demo attributes
     if (this.hasAttribute('is-connected')) {
@@ -621,11 +628,20 @@ class FastRTCVoiceWidget extends HTMLElement {
         display: inline-flex;
         align-items: center;
         gap: 12px;
-        background: #ffffff;
-        border: 1px solid #e5e7eb;
+        ${this.isDarkMode ? `
+          background: #1f2937;
+          border: 1px solid #374151;
+        ` : `
+          background: #ffffff;
+          border: 1px solid #e5e7eb;
+        `}
         border-radius: 24px;
         padding: 8px 16px 8px 12px;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        ${this.isDarkMode ? `
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+        ` : `
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        `}
         font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         box-sizing: border-box;
         position: relative;
@@ -635,7 +651,11 @@ class FastRTCVoiceWidget extends HTMLElement {
       }
 
       .widget-container:hover {
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        ${this.isDarkMode ? `
+          box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
+        ` : `
+          box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        `}
       }
 
       .widget-buttons {
@@ -651,8 +671,13 @@ class FastRTCVoiceWidget extends HTMLElement {
         width: 40px;
         height: 40px;
         border-radius: 50%;
-        background: #ffffff;
-        border: 2px solid #e5e7eb;
+        ${this.isDarkMode ? `
+          background: #1f2937;
+          border: 2px solid #374151;
+        ` : `
+          background: #ffffff;
+          border: 2px solid #e5e7eb;
+        `}
         cursor: pointer;
         transition: all 0.2s ease;
         outline: none;
@@ -660,31 +685,68 @@ class FastRTCVoiceWidget extends HTMLElement {
       }
 
       .mic-button.active {
-        background: #ef4444;
-        border-color: #dc2626;
+        ${this.isDarkMode ? `
+          background: #dc2626;
+          border-color: #b91c1c;
+        ` : `
+          background: #ef4444;
+          border-color: #dc2626;
+        `}
         color: #ffffff;
       }
 
       .mic-button.connecting {
-        background: #f59e0b;
-        border-color: #d97706;
+        ${this.isDarkMode ? `
+          background: #d97706;
+          border-color: #b45309;
+        ` : `
+          background: #f59e0b;
+          border-color: #d97706;
+        `}
         color: #ffffff;
       }
 
       .mic-button.muted {
         background: #fbbf24;
-        border-color: #f59e0b;
-        color: #111827 !important;
+        ${this.isDarkMode ? `
+          border-color: #d97706;
+        ` : `
+          border-color: #f59e0b;
+        `}
+        ${this.isDarkMode ? `
+          color: #111827 !important;
+        ` : `
+          color: #111827 !important;
+        `}
       }
 
       .mic-button.muted svg, .mic-button.muted svg * {
-        stroke: #111827 !important;
+        ${this.isDarkMode ? `
+          stroke: #111827 !important;
+        ` : `
+          stroke: #111827 !important;
+        `}
       }
 
       /* Call button (idle state) - plain/neutral */
       .mic-button:not(.active):not(.connecting):not(.muted) {
-        background: #ffffff;
-        border-color: #e5e7eb;
+        ${this.isDarkMode ? `
+          background: #1f2937;
+          border-color: #374151;
+          color: #f9fafb;
+        ` : `
+          background: #ffffff;
+          border-color: #e5e7eb;
+          color: #374151;
+        `}
+      }
+
+      .mic-button:not(.active):not(.connecting):not(.muted) svg {
+        ${this.isDarkMode ? `
+          color: #f9fafb;
+        ` : `
+          color: #374151;
+        `}
       }
 
       .mic-button:hover {
@@ -708,7 +770,11 @@ class FastRTCVoiceWidget extends HTMLElement {
       .primary-text {
         font-size: 13px;
         font-weight: 500;
-        color: #111827;
+        ${this.isDarkMode ? `
+          color: #f9fafb;
+        ` : `
+          color: #111827;
+        `}
         margin: 0;
         line-height: 1.2;
         white-space: nowrap;
@@ -718,7 +784,11 @@ class FastRTCVoiceWidget extends HTMLElement {
 
       .secondary-text {
         font-size: 11px;
-        color: #6b7280;
+        ${this.isDarkMode ? `
+          color: #d1d5db;
+        ` : `
+          color: #6b7280;
+        `}
         margin: 0;
         line-height: 1.2;
         white-space: nowrap;
@@ -741,7 +811,13 @@ class FastRTCVoiceWidget extends HTMLElement {
         width: 32px;
         height: 32px;
         border-radius: 50%;
-        background: #f3f4f6;
+        ${this.isDarkMode ? `
+          background: #111827;
+          color: #f9fafb;
+        ` : `
+          background: #f3f4f6;
+          color: #374151;
+        `}
         border: none;
         cursor: pointer;
         transition: all 0.2s ease;
@@ -749,15 +825,38 @@ class FastRTCVoiceWidget extends HTMLElement {
       }
 
       .settings-button:hover {
-        background: #e5e7eb;
+        ${this.isDarkMode ? `
+          background: #374151;
+          color: #f9fafb;
+        ` : `
+          background: #e5e7eb;
+          color: #374151;
+        `}
+      }
+
+      .settings-button svg {
+        ${this.isDarkMode ? `
+          color: #f9fafb;
+        ` : `
+          color: #374151;
+        `}
       }
 
       .device-menu {
         position: absolute;
-        background: white;
-        border: 1px solid #e5e7eb;
+        ${this.isDarkMode ? `
+          background: #1f2937;
+          border: 1px solid #374151;
+        ` : `
+          background: white;
+          border: 1px solid #e5e7eb;
+        `}
         border-radius: 8px;
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        ${this.isDarkMode ? `
+          box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
+        ` : `
+          box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        `}
         min-width: 200px;
         z-index: 1000;
         display: none;
@@ -809,9 +908,13 @@ class FastRTCVoiceWidget extends HTMLElement {
       }
 
       .device-menu-label {
-        font-size: 10px;
+        font-size: 9px;
         font-weight: 500;
-        color: #9ca3af;
+        ${this.isDarkMode ? `
+          color: #9ca3af;
+        ` : `
+          color: #9ca3af;
+        `}
         text-transform: uppercase;
         letter-spacing: 0.05em;
         padding: 0 8px 4px;
@@ -827,16 +930,24 @@ class FastRTCVoiceWidget extends HTMLElement {
       }
 
       .device-option:hover {
-        background-color: #f3f4f6;
+        ${this.isDarkMode ? `
+          background-color: #374151;
+        ` : `
+          background-color: #f3f4f6;
+        `}
       }
 
       .device-option.selected {
-        background-color: #eff6ff;
-        color: #2563eb;
+        ${this.isDarkMode ? `
+          background-color: #3b82f6;
+        ` : `
+          background-color: #eff6ff;
+        `}
+        color: #ffffff;
       }
 
       .device-option.selected label {
-        color: #2563eb;
+        color: #ffffff;
         font-weight: 500;
       }
 
@@ -847,8 +958,12 @@ class FastRTCVoiceWidget extends HTMLElement {
       .device-option label {
         flex: 1;
         cursor: pointer;
-        font-size: 12px;
-        color: #6b7280;
+        font-size: 11px;
+        ${this.isDarkMode ? `
+          color: #d1d5db;
+        ` : `
+          color: #6b7280;
+        `}
       }
 
       .audio-element {
