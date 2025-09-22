@@ -37,6 +37,29 @@ jobs:
           echo "Package.json contents:"
           cat package.json
 
+      - name: Check if version exists and increment if needed
+        run: |
+          PACKAGE_NAME="@rohanprichard/fastrtc-voice-widget"
+          CURRENT_VERSION=$(node -p "require('./package.json').version")
+
+          echo "Current version: $CURRENT_VERSION"
+          echo "Package name: $PACKAGE_NAME"
+
+          # Check if version already exists in GitHub Packages
+          if npm view "$PACKAGE_NAME@$CURRENT_VERSION" version 2>/dev/null; then
+            echo "Version $CURRENT_VERSION already exists, incrementing patch version..."
+
+            # Increment patch version using npm version command
+            npm version patch --no-git-tag-version
+
+            NEW_VERSION=$(node -p "require('./package.json').version")
+            echo "Updated package.json to version $NEW_VERSION"
+          else
+            echo "Version $CURRENT_VERSION does not exist, will publish as-is"
+          fi
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Publish to GitHub Packages
         run: npm publish
         env:
