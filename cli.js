@@ -64,6 +64,33 @@ const commands = {
       }
     }
   },
+  version: {
+    description: 'Increment package version (patch, minor, or major)',
+    action: () => {
+      const type = process.argv[3] || 'patch';
+      if (!['patch', 'minor', 'major'].includes(type)) {
+        console.log('Usage: npx fastrtc-voice-widget version <patch|minor|major>');
+        console.log('Examples:');
+        console.log('  npx fastrtc-voice-widget version patch    # 1.0.0 -> 1.0.1');
+        console.log('  npx fastrtc-voice-widget version minor    # 1.0.0 -> 1.1.0');
+        console.log('  npx fastrtc-voice-widget version major    # 1.0.0 -> 2.0.0');
+        return;
+      }
+
+      console.log(`Incrementing version (${type})...`);
+      try {
+        execSync(`npm version ${type}`, { stdio: 'inherit' });
+        console.log('✅ Version incremented successfully!');
+        console.log('💡 Commit this change before publishing:');
+        console.log('   git add package.json');
+        console.log('   git commit -m "Bump version"');
+        console.log('   git push');
+      } catch (error) {
+        console.error('❌ Version increment failed:', error.message);
+        process.exit(1);
+      }
+    }
+  },
   help: {
     description: 'Show this help message',
     action: () => {
@@ -79,6 +106,7 @@ const commands = {
       console.log('Examples:');
       console.log('  npx fastrtc-voice-widget build');
       console.log('  npx fastrtc-voice-widget dev');
+      console.log('  npx fastrtc-voice-widget version patch');
       console.log('  npx fastrtc-voice-widget help');
     }
   }
