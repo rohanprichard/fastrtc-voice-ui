@@ -23,7 +23,7 @@ Add the script to your HTML `<head>` section:
 
 ```html
 <head>
-  <script src="https://unpkg.com/@rohanprichard/fastrtc-voice-widget@latest/dist/fastrtc-voice-widget.js"></script>
+  <script src="https://npm.pkg.github.com/@rohanprichard/fastrtc-voice-widget@latest/dist/fastrtc-voice-widget.umd.js"></script>
 </head>
 ```
 
@@ -57,7 +57,7 @@ document.body.innerHTML += '<fastrtc-voice-widget api-url="https://your-webrtc-s
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script src="https://unpkg.com/@rohanprichard/fastrtc-voice-widget@latest/dist/fastrtc-voice-widget.js"></script>
+  <script src="https://npm.pkg.github.com/@rohanprichard/fastrtc-voice-widget@latest/dist/fastrtc-voice-widget.umd.js"></script>
 </head>
 <body>
   <fastrtc-voice-widget
