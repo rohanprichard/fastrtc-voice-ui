@@ -1127,7 +1127,7 @@ class FastRTCVoiceWidget extends HTMLElement {
     } else {
       this.audioOutputElement = document.createElement('audio');
       this.audioOutputElement.className = 'audio-element';
-      this.audioOutputElement.id = 'fastrtc-voice-widget-audio';
+      this.audioOutputElement.id = 'fastrtcvoice-widget-audio';
       this.audioOutputElement.autoplay = true;
       this.audioOutputElement.playsInline = true;
       this.audioOutputElement.controls = false;
@@ -1407,8 +1407,8 @@ class FastRTCVoiceWidget extends HTMLElement {
 }
 
 // Register the web component
-if (!customElements.get('fastrtc-voice-widget')) {
-  customElements.define('fastrtc-voice-widget', FastRTCVoiceWidget);
+if (!customElements.get('fastrtcvoice-widget')) {
+  customElements.define('fastrtcvoice-widget', FastRTCVoiceWidget);
 }
 
 // Rely on the browser's native custom element upgrade lifecycle

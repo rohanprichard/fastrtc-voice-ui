@@ -23,7 +23,7 @@ Add the script to your HTML `<head>` section:
 
 ```html
 <head>
-  <script src="https://unpkg.com/@rohanprichard/fastrtc-voice-widget@latest/dist/fastrtc-voice-widget.js"></script>
+  <script src="https://unpkg.com/@rohanprichard/fastrtcvoice-widget@latest/dist/fastrtcvoice-widget.js"></script>
 </head>
 ```
 
@@ -31,22 +31,22 @@ Then use the widget in your HTML body:
 
 ```html
 <body>
-  <fast-rtc-voice-widget api-url="https://your-webrtc-server.com"></fast-rtc-voice-widget>
+  <fastrtcvoice-widget api-url="https://your-webrtc-server.com"></fastrtcvoice-widget>
 </body>
 ```
 
 ### NPM Installation
 
 ```bash
-npm install @rohanprichard/fastrtc-voice-widget
+npm install @rohanprichard/fastrtcvoice-widget
 ```
 
 Then import and use in your JavaScript:
 
 ```javascript
-import 'fastrtc-voice-widget';
+import 'fastrtcvoice-widget';
 
-document.body.innerHTML += '<fast-rtc-voice-widget api-url="https://your-webrtc-server.com"></fast-rtc-voice-widget>';
+document.body.innerHTML += '<fastrtcvoice-widget api-url="https://your-webrtc-server.com"></fastrtcvoice-widget>';
 ```
 
 ## 📖 Usage
@@ -57,13 +57,13 @@ document.body.innerHTML += '<fast-rtc-voice-widget api-url="https://your-webrtc-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script src="https://unpkg.com/@rohanprichard/fastrtc-voice-widget@latest/dist/fastrtc-voice-widget.js"></script>
+  <script src="https://unpkg.com/@rohanprichard/fastrtcvoice-widget@latest/dist/fastrtcvoice-widget.js"></script>
 </head>
 <body>
-  <fast-rtc-voice-widget
+  <fastrtcvoice-widget
     api-url="https://your-webrtc-server.com"
     auth-token="your-auth-token">
-  </fast-rtc-voice-widget>
+  </fastrtcvoice-widget>
 </body>
 </html>
 ```
@@ -83,14 +83,14 @@ document.body.innerHTML += '<fast-rtc-voice-widget api-url="https://your-webrtc-
 ### Advanced Configuration
 
 ```html
-<fast-rtc-voice-widget
+<fastrtcvoice-widget
   api-url="https://your-webrtc-server.com"
   auth-token="your-auth-token"
   menu-position="top-left"
   dark-mode
   debug
   show-device-selection>
-</fast-rtc-voice-widget>
+</fastrtcvoice-widget>
 ```
 
 ## 🎨 Widget States
@@ -117,24 +117,24 @@ This package includes a CLI tool for development:
 
 ```bash
 # Install CLI globally
-npm install -g @rohanprichard/fastrtc-voice-widget
+npm install -g @rohanprichard/fastrtcvoice-widget
 
 # Build for production
-fastrtc-voice-widget build
+fastrtcvoice-widget build
 
 # Start development server
-fastrtc-voice-widget dev
+fastrtcvoice-widget dev
 
 # Show help
-fastrtc-voice-widget help
+fastrtcvoice-widget help
 ```
 
 ## 📦 Package Contents
 
 ```
 dist/
-├── fastrtc-voice-widget.umd.js    # UMD build for CDN
-├── fastrtc-voice-widget.umd.js.map # Source map
+├── fastrtcvoice-widget.umd.js    # UMD build for CDN
+├── fastrtcvoice-widget.umd.js.map # Source map
 src/
 ├── widget.js                      # Main widget source
 cli.js                             # CLI tool
@@ -187,7 +187,7 @@ npm run dev    # Development build with watch
 
 ## 🎮 API Reference
 
-### Custom Element: `<fast-rtc-voice-widget>`
+### Custom Element: `<fastrtcvoice-widget>`
 
 #### Properties
 - `isConnected` - Boolean indicating WebRTC connection status
@@ -211,7 +211,7 @@ npm run dev    # Development build with watch
 
 ```javascript
 // Get widget reference
-const widget = document.querySelector('fast-rtc-voice-widget');
+const widget = document.querySelector('fastrtcvoice-widget');
 
 // Listen for events
 widget.addEventListener('connection-established', () => {
@@ -251,7 +251,7 @@ widget.toggleMute();
 Enable debug mode to see detailed logging:
 
 ```html
-<fast-rtc-voice-widget debug api-url="..."></fast-rtc-voice-widget>
+<fastrtcvoice-widget debug api-url="..."></fastrtcvoice-widget>
 ```
 
 Check browser console for detailed logs and connection information.

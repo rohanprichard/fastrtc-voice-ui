@@ -1,14 +1,14 @@
 {
-  "name": "@rohanprichard/fastrtc-voice-widget",
+  "name": "@rohanprichard/fastrtcvoice-widget",
   "version": "1.0.0",
   "description": "A language-agnostic voice AI widget that can be embedded via CDN",
-  "main": "dist/fastrtc-voice-widget.umd.js",
+  "main": "dist/fastrtcvoice-widget.umd.js",
   "files": [
     "dist",
     "README.md"
   ],
   "bin": {
-    "fastrtc-voice-widget": "./cli.js"
+    "fastrtcvoice-widget": "./cli.js"
   },
   "scripts": {
     "build": "vite build",

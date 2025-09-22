@@ -6,7 +6,7 @@ export default defineConfig({
       entry: 'src/widget.js',
       name: 'FastRTCVoiceWidget',
       formats: ['umd'],
-      fileName: 'fastrtc-voice-widget'
+      fileName: 'fastrtcvoice-widget'
     },
     rollupOptions: {
       output: {

@@ -15,10 +15,10 @@ const commands = {
         console.log('');
         console.log('Usage:');
         console.log('1. Add to your HTML head (IMPORTANT - must be in <head>):');
-        console.log('   <script src="https://unpkg.com/fastrtc-voice-widget@1.0.0/dist/fastrtc-voice-widget.js"></script>');
+        console.log('   <script src="https://unpkg.com/@rohanprichard/fastrtcvoice-widget@latest/dist/fastrtcvoice-widget.umd.js"></script>');
         console.log('');
         console.log('2. Use in your HTML body:');
-        console.log('   <fast-rtc-voice-widget api-url="http://localhost:8000"></fast-rtc-voice-widget>');
+        console.log('   <fastrtcvoice-widget api-url="http://localhost:8000"></fastrtcvoice-widget>');
         console.log('   (Replace localhost:8000 with your actual WebRTC API URL)');
         console.log('');
         console.log('⚠️  IMPORTANT: Script must be in <head> section, not at bottom of page!');
@@ -69,7 +69,7 @@ const commands = {
     action: () => {
       console.log('FastRTC Voice Widget CLI');
       console.log('');
-      console.log('Usage: npx fastrtc-voice-widget <command>');
+      console.log('Usage: npx fastrtcvoice-widget <command>');
       console.log('');
       console.log('Commands:');
       Object.entries(commands).forEach(([name, cmd]) => {
@@ -77,9 +77,9 @@ const commands = {
       });
       console.log('');
       console.log('Examples:');
-      console.log('  npx fastrtc-voice-widget build');
-      console.log('  npx fastrtc-voice-widget dev');
-      console.log('  npx fastrtc-voice-widget help');
+      console.log('  npx fastrtcvoice-widget build');
+      console.log('  npx fastrtcvoice-widget dev');
+      console.log('  npx fastrtcvoice-widget help');
     }
   }
 };
