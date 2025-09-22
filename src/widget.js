@@ -214,6 +214,8 @@ class FastRTCVoiceWidget extends HTMLElement {
         if (evt.track.kind === 'audio') {
           if (this.audioOutputElement) {
             if (this.audioOutputElement.srcObject !== evt.streams[0]) {
+              // New remote stream attached; reset playback flag so we re-trigger play()
+              this.playbackStarted = false;
               this.audioOutputElement.srcObject = evt.streams[0];
 
               // Set volume and unmute
@@ -238,6 +240,7 @@ class FastRTCVoiceWidget extends HTMLElement {
         // If data channel opens and we're not marked as connected, force connection state
         if (!this.isWebRTCConnected) {
           this.isWebRTCConnected = true;
+          this.isConnecting = false;
           this.updateUI();
 
           // Force unmute audio element when data channel opens
@@ -288,6 +291,7 @@ class FastRTCVoiceWidget extends HTMLElement {
             this.peerConnection.iceConnectionState === 'completed') {
           if (!this.isWebRTCConnected) {
             this.isWebRTCConnected = true;
+            this.isConnecting = false;
             this.updateUI();
 
             // Force unmute audio element when ICE connected
@@ -296,6 +300,7 @@ class FastRTCVoiceWidget extends HTMLElement {
         } else if (this.peerConnection.iceConnectionState === 'failed' ||
                    this.peerConnection.iceConnectionState === 'disconnected') {
           this.isWebRTCConnected = false;
+          this.isConnecting = false;
           this.updateUI();
         }
       };
@@ -304,6 +309,7 @@ class FastRTCVoiceWidget extends HTMLElement {
 
         if (this.peerConnection.connectionState === 'connected') {
           this.isWebRTCConnected = true;
+          this.isConnecting = false;
           this.updateUI();
 
           // Force unmute audio element when connected
@@ -314,10 +320,12 @@ class FastRTCVoiceWidget extends HTMLElement {
           
         } else if (this.peerConnection.connectionState === 'failed') {
           this.isWebRTCConnected = false;
+          this.isConnecting = false;
           this.updateUI();
         } else if (this.peerConnection.connectionState === 'disconnected' ||
                    this.peerConnection.connectionState === 'closed') {
           this.isWebRTCConnected = false;
+          this.isConnecting = false;
           this.updateUI();
         }
       };
@@ -431,12 +439,16 @@ class FastRTCVoiceWidget extends HTMLElement {
 
       try {
         await this.setupWebRTC();
+        // Don't reset isConnecting here - let the event handlers in setupWebRTC() handle state transitions
+        // The connection state will be managed by the ICE/connection state change handlers
       } catch (error) {
         console.error("Error during setupWebRTC:", error);
-      } finally {
+        // Only reset connecting state on actual error
         this.isConnecting = false;
         this.updateUI();
       }
+      // Note: If setupWebRTC() succeeds, the event handlers will set isWebRTCConnected = true
+      // and isConnecting = false, which will trigger UI updates automatically
     }
   }
 
@@ -662,7 +674,10 @@ class FastRTCVoiceWidget extends HTMLElement {
       .mic-button.muted {
         background: #fbbf24;
         border-color: #f59e0b;
-        color: #111827;
+        color: #111827 !important;
+      }
+      .mic-button.muted svg, .mic-button.muted svg * {
+        stroke: #111827 !important;
       }
 
       .text-container {
@@ -911,7 +926,9 @@ class FastRTCVoiceWidget extends HTMLElement {
       muteButton.className = `mic-button ${this.isMicMuted ? 'muted' : ''}`;
       muteButton.setAttribute('aria-label', this.isMicMuted ? 'Unmute microphone' : 'Mute microphone');
       muteButton.setAttribute('data-role', 'mute');
-      muteButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-mic-off-icon lucide-mic-off"><path d="M12 19v3"/><path d="M15 9.34V5a3 3 0 0 0-5.68-1.33"/><path d="M16.95 16.95A7 7 0 0 1 5 12v-2"/><path d="M18.89 13.23A7 7 0 0 0 19 12v-2"/><path d="m2 2 20 20"/><path d="M9 9v3a3 3 0 0 0 5.12 2.12"/></svg>'
+      muteButton.innerHTML = this.isMicMuted
+        ? '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-mic-off-icon lucide-mic-off"><path d="M12 19v3"/><path d="M15 9.34V5a3 3 0 0 0-5.68-1.33"/><path d="M16.95 16.95A7 7 0 0 1 5 12v-2"/><path d="M18.89 13.23A7 7 0 0 0 19 12v-2"/><path d="m2 2 20 20"/><path d="M9 9v3a3 3 0 0 0 5.12 2.12"/></svg>'
+        : '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-mic-icon lucide-mic"><path d="M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v1a7 7 0 0 1-14 0v-1"/><path d="M12 19v3"/><path d="M8 22h8"/></svg>'
       buttonsContainer.appendChild(hangUpButton);
       buttonsContainer.appendChild(muteButton);
       container.appendChild(buttonsContainer);
@@ -1103,6 +1120,13 @@ class FastRTCVoiceWidget extends HTMLElement {
     if (muteButton && !muteButton.hasEventListener) {
       muteButton.addEventListener('click', () => {
         this.handleMuteToggle();
+        // Update icon and class immediately to reflect state
+        const isMutedNow = this.isMicMuted;
+        muteButton.classList.toggle('muted', isMutedNow);
+        muteButton.setAttribute('aria-label', isMutedNow ? 'Unmute microphone' : 'Mute microphone');
+        muteButton.innerHTML = isMutedNow
+          ? '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-mic-off-icon lucide-mic-off"><path d="M12 19v3"/><path d="M15 9.34V5a3 3 0 0 0-5.68-1.33"/><path d="M16.95 16.95A7 7 0 0 1 5 12v-2"/><path d="M18.89 13.23A7 7 0 0 0 19 12v-2"/><path d="m2 2 20 20"/><path d="M9 9v3a3 3 0 0 0 5.12 2.12"/></svg>'
+          : '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-mic-icon lucide-mic"><path d="M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v1a7 7 0 0 1-14 0v-1"/><path d="M12 19v3"/><path d="M8 22h8"/></svg>';
       });
       muteButton.hasEventListener = true;
     }
