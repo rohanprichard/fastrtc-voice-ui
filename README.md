@@ -34,7 +34,11 @@ Add the script to your HTML `<head>` section:
 
 ```html
 <head>
-  <script src="https://npm.pkg.github.com/@rohanprichard/fastrtc-voice-widget@latest/dist/fastrtc-voice-widget.umd.js"></script>
+  <!-- JSDelivr CDN (Recommended - Fast, reliable, cached globally) -->
+  <script src="https://cdn.jsdelivr.net/npm/@rohanprichard/fastrtc-voice-widget@latest/dist/fastrtc-voice-widget.umd.js"></script>
+
+  <!-- OR GitHub Raw CDN (Alternative - Direct from GitHub) -->
+  <!-- <script src="https://raw.githubusercontent.com/rohanprichard/fastrtc-voice-ui/main/dist/fastrtc-voice-widget.umd.js"></script> -->
 </head>
 ```
 
@@ -52,7 +56,8 @@ Here's a basic skeleton of what it would look like.
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script src="https://npm.pkg.github.com/@rohanprichard/fastrtc-voice-widget@latest/dist/fastrtc-voice-widget.umd.js"></script>
+  <!-- JSDelivr CDN (Recommended) -->
+  <script src="https://cdn.jsdelivr.net/npm/@rohanprichard/fastrtc-voice-widget@latest/dist/fastrtc-voice-widget.umd.js"></script>
 </head>
 <body>
   <fastrtc-voice-widget
