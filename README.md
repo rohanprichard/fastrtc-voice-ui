@@ -4,6 +4,17 @@ A language-agnostic, embeddable WebRTC voice chat widget that can be easily inte
 
 ![FastRTC Voice Widget Demo](https://via.placeholder.com/400x200/4F46E5/FFFFFF?text=FastRTC+Voice+Widget)
 
+Note: You will need to have an endpoint serving TURN server credentials. Read more on the [fastrtc docs](https://fastrtc.org/deployment/) about why it is required!
+
+Here's a simple implementation:
+
+```python
+@app.get("/webrtc/turn-credentials")
+async def get_turn_credentials():
+    return get_twilio_turn_credentials(twilio_sid="", twilio_token="")
+```
+Serve it at the path mentioned here.
+
 ## ✨ Features
 
 - 🎙️ **WebRTC Voice Chat** - Real-time audio communication
@@ -13,7 +24,7 @@ A language-agnostic, embeddable WebRTC voice chat widget that can be easily inte
 - 🔊 **Device Selection** - Choose microphones and speakers
 - 🔇 **Mute Controls** - Easy mute/unmute functionality
 - 🛠️ **Debug Mode** - Built-in debugging capabilities
-- 🌐 **CDN Ready** - No build process required for basic usage
+- 🌐 **CDN Ready** - No build process required for usage
 
 ## 🚀 Quick Start
 
@@ -31,27 +42,11 @@ Then use the widget in your HTML body:
 
 ```html
 <body>
-  <fastrtc-voice-widget api-url="https://your-webrtc-server.com"></fastrtc-voice-widget>
+  <fastrtc-voice-widget api-url="https://your-fastrtc-server.com"></fastrtc-voice-widget>
 </body>
 ```
 
-### NPM Installation
-
-```bash
-npm install @rohanprichard/fastrtc-voice-widget
-```
-
-Then import and use in your JavaScript:
-
-```javascript
-import 'fastrtc-voice-widget';
-
-document.body.innerHTML += '<fastrtc-voice-widget api-url="https://your-webrtc-server.com"></fastrtc-voice-widget>';
-```
-
-## 📖 Usage
-
-### Basic Implementation
+Here's a basic skeleton of what it would look like.
 
 ```html
 <!DOCTYPE html>
@@ -111,35 +106,6 @@ The widget includes comprehensive device management:
 - **Device enumeration** - Lists all available microphones and speakers
 - **Audio output** - Dedicated hidden audio element for remote stream
 
-## 🎯 CLI Commands
-
-This package includes a CLI tool for development:
-
-```bash
-# Install CLI globally
-npm install -g @rohanprichard/fastrtc-voice-widget
-
-# Build for production
-fastrtc-voice-widget build
-
-# Start development server
-fastrtc-voice-widget dev
-
-# Show help
-fastrtc-voice-widget help
-```
-
-## 📦 Package Contents
-
-```
-dist/
-├── fastrtc-voice-widget.umd.js    # UMD build for CDN
-├── fastrtc-voice-widget.umd.js.map # Source map
-src/
-├── widget.js                      # Main widget source
-cli.js                             # CLI tool
-package.json                       # Package configuration
-```
 
 ## 🔧 Development
 
@@ -155,26 +121,8 @@ package.json                       # Package configuration
 git clone https://github.com/rohanprichard/fastrtc-voice-ui.git
 cd fastrtc-voice-ui
 
-# Install dependencies
-npm install
+Make changes to the widget.js file, and use npm run build to build the dist.
 
-# Start development server
-npm run dev
-
-# Build for production
-npm run build
-```
-
-### Project Structure
-
-```
-├── src/
-│   └── widget.js          # Main widget component
-├── cli.js                 # CLI tool
-├── vite.config.js         # Build configuration
-├── package.json           # Package metadata
-└── README.md              # This file
-```
 
 ### Building
 
@@ -183,48 +131,6 @@ The project uses Vite for building:
 ```bash
 npm run build  # Production build
 npm run dev    # Development build with watch
-```
-
-## 🎮 API Reference
-
-### Custom Element: `<fastrtc-voice-widget>`
-
-#### Properties
-- `isConnected` - Boolean indicating WebRTC connection status
-- `isMicMuted` - Boolean indicating microphone mute status
-- `isExpanded` - Boolean indicating if widget is expanded
-
-#### Methods
-- `connect()` - Initiate WebRTC connection
-- `disconnect()` - Close WebRTC connection
-- `toggleMute()` - Toggle microphone mute state
-- `selectInputDevice(deviceId)` - Change input device
-- `selectOutputDevice(deviceId)` - Change output device
-
-#### Events
-- `connection-established` - Fired when WebRTC connection is made
-- `connection-lost` - Fired when WebRTC connection is lost
-- `microphone-muted` - Fired when microphone is muted
-- `microphone-unmuted` - Fired when microphone is unmuted
-
-### Usage Example
-
-```javascript
-// Get widget reference
-const widget = document.querySelector('fastrtc-voice-widget');
-
-// Listen for events
-widget.addEventListener('connection-established', () => {
-  console.log('Voice chat connected!');
-});
-
-widget.addEventListener('microphone-muted', () => {
-  console.log('Microphone muted');
-});
-
-// Programmatically control widget
-widget.connect();
-widget.toggleMute();
 ```
 
 ## 🔍 Troubleshooting
@@ -271,28 +177,11 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 7. Push to the branch (`git push origin feature/amazing-feature`)
 8. Open a Pull Request
 
-### Code Style
-
-- Use 2 spaces for indentation
-- Follow ES6+ standards
-- Add JSDoc comments for new functions
-- Test your changes thoroughly
-
 ## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🙏 Acknowledgments
-
-- Built with WebRTC APIs
-- Styled with modern CSS
-- Tested across multiple browsers
-- Designed for accessibility
 
 ## 📞 Support
 
-For support, email [your-email@example.com] or create an issue on GitHub.
-
----
-
-**Made with ❤️ for the WebRTC community**
+For support, create an issue on GitHub and I will try to help where possible.
