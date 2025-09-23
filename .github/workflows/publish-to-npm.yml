@@ -1,0 +1,60 @@
+name: Publish to NPM
+
+on:
+  workflow_dispatch:  # Only manual trigger - no automatic publishing
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      id-token: write  # Required for npm publishing with OIDC
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build package
+        run: npm run build
+
+      - name: Check if version exists on npm
+        id: check-npm-version
+        run: |
+          PACKAGE_NAME=$(node -p "require('./package.json').name")
+          CURRENT_VERSION=$(node -p "require('./package.json').version")
+
+          echo "Checking if $PACKAGE_NAME@$CURRENT_VERSION exists on npm..."
+
+          # Check if version already exists on npm
+          if npm view "$PACKAGE_NAME@$CURRENT_VERSION" version 2>/dev/null; then
+            echo "Version $CURRENT_VERSION already exists on npm, incrementing patch version..."
+            npm version patch --no-git-tag-version
+            NEW_VERSION=$(node -p "require('./package.json').version")
+            echo "Updated to version $NEW_VERSION"
+            echo "incremented=true" >> $GITHUB_OUTPUT
+          else
+            echo "Version $CURRENT_VERSION does not exist on npm, will publish as-is"
+            echo "incremented=false" >> $GITHUB_OUTPUT
+          fi
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Rebuild if version changed
+        if: steps.check-npm-version.outputs.incremented == 'true'
+        run: npm run build
+
+      - name: Publish to NPM
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_CONFIG_PROVENANCE: true
