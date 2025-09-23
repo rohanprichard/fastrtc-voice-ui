@@ -34,11 +34,11 @@ Add the script to your HTML `<head>` section:
 
 ```html
 <head>
-  <!-- JSDelivr CDN (Recommended - Fast, reliable, cached globally) -->
-  <script src="https://cdn.jsdelivr.net/npm/@rohanprichard/fastrtc-voice-widget@latest/dist/fastrtc-voice-widget.umd.js"></script>
+  <!-- GitHub Raw CDN (Primary - Direct from your repository) -->
+  <script src="https://raw.githubusercontent.com/rohanprichard/fastrtc-voice-ui/main/dist/fastrtc-voice-widget.umd.js"></script>
 
-  <!-- OR GitHub Raw CDN (Alternative - Direct from GitHub) -->
-  <!-- <script src="https://raw.githubusercontent.com/rohanprichard/fastrtc-voice-ui/main/dist/fastrtc-voice-widget.umd.js"></script> -->
+  <!-- OR JSDelivr via GitHub Packages (Alternative - requires npm publish) -->
+  <!-- <script src="https://cdn.jsdelivr.net/npm/@rohanprichard/fastrtc-voice-widget@latest/dist/fastrtc-voice-widget.umd.js"></script> -->
 </head>
 ```
 
@@ -56,8 +56,8 @@ Here's a basic skeleton of what it would look like.
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- JSDelivr CDN (Recommended) -->
-  <script src="https://cdn.jsdelivr.net/npm/@rohanprichard/fastrtc-voice-widget@latest/dist/fastrtc-voice-widget.umd.js"></script>
+  <!-- GitHub Raw CDN (Primary) -->
+  <script src="https://raw.githubusercontent.com/rohanprichard/fastrtc-voice-ui/main/dist/fastrtc-voice-widget.umd.js"></script>
 </head>
 <body>
   <fastrtc-voice-widget

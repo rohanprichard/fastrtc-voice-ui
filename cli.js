@@ -15,7 +15,7 @@ const commands = {
         console.log('');
         console.log('Usage:');
         console.log('1. Add to your HTML head (IMPORTANT - must be in <head>):');
-        console.log('   <script src="https://cdn.jsdelivr.net/npm/@rohanprichard/fastrtc-voice-widget@latest/dist/fastrtc-voice-widget.umd.js"></script>');
+        console.log('   <script src="https://raw.githubusercontent.com/rohanprichard/fastrtc-voice-ui/main/dist/fastrtc-voice-widget.umd.js"></script>');
         console.log('');
         console.log('2. Use in your HTML body:');
         console.log('   <fastrtc-voice-widget api-url="http://localhost:8000"></fastrtc-voice-widget>');
