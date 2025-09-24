@@ -2,8 +2,6 @@
 
 A language-agnostic, embeddable WebRTC voice chat widget that can be easily integrated into any website via CDN or npm. Built as a custom HTML element with a clean, accessible interface.
 
-![FastRTC Voice Widget Demo](https://via.placeholder.com/400x200/4F46E5/FFFFFF?text=FastRTC+Voice+Widget)
-
 Note: You will need to have an endpoint serving TURN server credentials. Read more on the [fastrtc docs](https://fastrtc.org/deployment/) about why it is required!
 
 Here's a simple implementation:
