@@ -27,7 +27,8 @@
   "author": "Rohan Richard",
   "license": "MIT",
   "publishConfig": {
-    "registry": "https://npm.pkg.github.com"
+    "access": "public",
+    "registry": "https://registry.npmjs.org"
   },
   "devDependencies": {
     "terser": "^5.44.0",

@@ -37,7 +37,7 @@ jobs:
           echo "Checking if $PACKAGE_NAME@$CURRENT_VERSION exists on npm..."
 
           # npm view now uses the authentication configured by setup-node
-          if npm view "$PACKAGE_NAME@$CURRENT_VERSION" version 2>/dev/null; then
+          if npm view "$PACKAGE_NAME@$CURRENT_VERSION" version --registry=https://registry.npmjs.org 2>/dev/null; then
             echo "Version $CURRENT_VERSION already exists on npm, incrementing patch version..."
             npm version patch --no-git-tag-version
             NEW_VERSION=$(node -p "require('./package.json').version")
@@ -53,6 +53,6 @@ jobs:
         run: npm run build
 
       - name: Publish to NPM
-        run: npm publish 
+        run: npm publish --registry=https://registry.npmjs.org --access public
         env:
           NPM_CONFIG_PROVENANCE: true
